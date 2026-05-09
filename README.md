@@ -288,8 +288,49 @@ However, when the queue grew beyond a few thousand votes, query times increased 
 ---
 
 
-### Reflection 4: System Integration & Operational Insights - Member 4
+### Reflection 4: System Integration & Operational Insights - Threcia Mae R. Cabuguason
 
+My responsibility was ensuring all components worked together seamlessly and understanding the operational aspects of running such a system.
+
+**Integration Challenges:**
+The biggest integration hurdle was **environment configuration**. The system required:
+- Supabase URL to connect to PostgreSQL
+- Two different API keys (anon vs. service_role)
+- Function deployment and secret management
+- Proper CORS settings for the Edge Function
+
+One memorable debugging session: the edge client couldn't reach the API endpoint because the function deployment hadn't completed. Understanding the asynchronous nature of serverless deployments was crucial—I learned to wait for the function status to show "Active" before testing.
+
+**Observability & Monitoring:**
+Unlike traditional systems with centralized logging, debugging the distributed voting system required:
+1. **Client Logs**: Output from edge_client.py and process_votes.py
+2. **Database State**: Querying tables to understand vote progression
+3. **Function Logs**: Checking Supabase Edge Function execution logs
+4. **Performance Metrics**: The `vote_metrics` view for system health
+
+I created a simple monitoring query that showed system health:
+```sql
+SELECT 
+    (SELECT COUNT(*) FROM raw_votes WHERE status='pending') as queue_backlog,
+    (SELECT COUNT(*) FROM processed_votes) as processed_total,
+    (SELECT COUNT(DISTINCT worker_id) FROM processing_logs) as active_workers,
+    (SELECT MAX(logged_at) FROM processing_logs) as last_activity
+```
+
+**Operational Best Practices Learned:**
+1. **Idempotency**: The unique constraint on `processed_votes` made the system idempotent—reprocessing a vote wouldn't create duplicates
+2. **Observability First**: Comprehensive logging in `processing_logs` made debugging easy
+3. **Failure Modes**: Understanding how claim expiration works meant I could set appropriate TTLs based on expected processing times
+4. **Cost Optimization**: Unlike cloud function pricing per invocation, the Supabase model meant cost scaled with actual data volume, not request count
+
+**Deployment Verification:**
+The system's correctness depended on all components working together:
+- Deployed Edge Function endpoint: `https://[project-id].supabase.co/functions/v1/vote`
+- Schema created in PostgreSQL: 7 objects verified
+- Environment variables: 6 required variables configured
+- Workers running: At least one worker polling the queue
+
+I learned that in distributed systems, **"It works on my machine"** means nothing—comprehensive integration testing across all components is essential.
 
 ---
 
