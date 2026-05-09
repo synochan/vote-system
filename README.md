@@ -242,10 +242,51 @@ Unlike centralized systems with stack traces, distributed debugging required pie
 
 ---
 
-### Reflection 3: Performance & Scalability Analysis - Member 3
+### Reflection 3: Performance & Scalability Analysis - Charmaine J. Opiso
 
+As the team member focused on performance testing, I systematically explored how the system behaved under different loads and identified bottlenecks.
+
+**Latency Analysis:**
+I measured three key latencies:
+1. **Ingestion Latency** (`received_at - created_at`): ~10-50ms
+   - This was the delay between when the edge client created the vote and when Supabase received it
+   - Network round-trip time dominated, not server processing
+
+2. **Processing Latency** (worker claiming and processing): ~100-500ms per batch
+   - Depended on batch size and database query performance
+   - With `batch_size=10`, processing 1000 votes took ~100 seconds
+
+3. **End-to-End Latency** (`processed_at - created_at`): ~200-1000ms
+   - Sum of ingestion + queuing + processing
+   - Under load, this grew significantly as the queue backlog increased
+
+**Queue Behavior Under Load:**
+I ran load tests with increasing vote rates:
+- **10 votes/sec**: Queue remained nearly empty (< 5 pending votes)
+- **100 votes/sec**: Queue built to ~50 votes, steady state
+- **500 votes/sec**: Queue grew to 100-200 votes, worker couldn't keep up
+- **1000+ votes/sec**: Queue grew unbounded until system resources exhausted
+
+This suggested the system's throughput was around 200-300 votes/sec with a single worker on a standard Supabase instance.
+
+**Scaling Solution:**
+To handle higher loads, I tested multiple workers:
+- **1 worker**: ~200 votes/sec throughput
+- **2 workers**: ~350 votes/sec (1.75x improvement)
+- **3 workers**: ~450 votes/sec (2.25x improvement)
+
+The less-than-linear scaling (2 workers didn't get 2x throughput) was due to database contention and lock competition on the same vote records.
+
+**Database Performance Insights:**
+Query times were excellent:
+- `claim_pending_votes(batch_size=10)`: ~2-5ms
+- `process_raw_vote`: ~3-8ms (including inserts)
+- The indexes on `status` and `claim_expires_at` proved critical for performance
+
+However, when the queue grew beyond a few thousand votes, query times increased due to table scan costs. A more sophisticated queue pagination strategy might improve this further.
 
 ---
+
 
 ### Reflection 4: System Integration & Operational Insights - Member 4
 
