@@ -1,5 +1,13 @@
 # Supabase Distributed Voting System - Submission Document
 
+# Walkthrough Video
+
+
+
+https://github.com/user-attachments/assets/9bce3fd9-f711-493b-9624-f0d0f90cb1f1
+
+
+
 ## System Overview and Architecture
 
 This project implements a distributed voting system using Supabase as the backend infrastructure, replacing traditional Google Cloud Platform components with modern serverless alternatives.
