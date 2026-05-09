@@ -195,7 +195,7 @@ During initial setup, I tested the edge client and worker independently. The seq
 **Insights on Database-Driven Coordination:**
 I was initially skeptical about using a table as a queue instead of a dedicated message broker like Pub/Sub. However, the Supabase approach provided surprising advantages:
 - **Transactionality**: The PostgreSQL `ACID` guarantees meant no votes could be lost or duplicated at the transaction level
-- **Visibility**: Unlike Pub/Sub's black box, I could query the exact state of every vote at any time
+- **Visibility**: I could query the exact state of every vote at any time
 - **Deduplication**: The `UNIQUE(user_id, poll_id)` constraint in `processed_votes` eliminated duplicates automatically through database constraints, not application logic
 
 **Performance Observations:**
