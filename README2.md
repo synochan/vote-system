@@ -185,7 +185,7 @@ GROUP BY poll_id, choice;
 
 ## Individual Student Reflections
 
-### Reflection 1: Architecture & System Design - Alex Chen
+### Reflection 1: Architecture & System Design - Christian Dagcuta
 
 Implementing the Supabase distributed voting system provided invaluable insights into how distributed systems coordinate complex workflows across multiple components. What struck me most was the shift from thinking about single machines to thinking about eventual consistency and asynchronous coordination.
 
@@ -209,7 +209,7 @@ The distributed nature introduced debugging challenges. When duplicates appeared
 
 ---
 
-### Reflection 2: Implementation & Failure Scenarios - Jordan Martinez
+### Reflection 2: Implementation & Failure Scenarios - Member 2
 
 My focus was on making the system robust to failures, and this experience fundamentally changed how I approach error handling in distributed systems. The Supabase approach forced me to design for failure recovery at the database level, not just in application code.
 
@@ -243,7 +243,7 @@ Unlike centralized systems with stack traces, distributed debugging required pie
 
 ---
 
-### Reflection 3: Performance & Scalability Analysis - Sam Patel
+### Reflection 3: Performance & Scalability Analysis - Member 3
 
 As the team member focused on performance testing, I systematically explored how the system behaved under different loads and identified bottlenecks.
 
@@ -288,7 +288,7 @@ However, when the queue grew beyond a few thousand votes, query times increased 
 
 ---
 
-### Reflection 4: System Integration & Operational Insights - Casey Kim
+### Reflection 4: System Integration & Operational Insights - Member 4
 
 My responsibility was ensuring all components worked together seamlessly and understanding the operational aspects of running such a system.
 
