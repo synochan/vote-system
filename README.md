@@ -410,7 +410,7 @@ However, when the queue grew beyond a few thousand votes, query times increased 
 ### Deployed Cloud Run API Endpoint URL
 
 ```
-https://your-project-id.supabase.co/functions/v1/vote
+https://kajjzccpdmzjlwoaofmi.supabase.co
 ```
 
 Replace `your-project-id` with your actual Supabase project ID.
