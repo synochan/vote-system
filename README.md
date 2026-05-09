@@ -221,7 +221,6 @@ The distributed nature introduced debugging challenges. When duplicates appeared
 
 ### Reflection 4: System Integration & Operational Insights - Member 4
 
-g—comprehensive integration testing across all components is essential.
 
 ---
 
