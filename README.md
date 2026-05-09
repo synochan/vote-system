@@ -212,31 +212,32 @@ The distributed nature introduced debugging challenges. When duplicates appeared
 ### Reflection 2: Implementation & Failure Scenarios - Carmeli Jean Marie Gadrinab
 My focus was on making the system robust to failures, and this experience fundamentally changed how I approach error handling in distributed systems. The Supabase approach forced me to design for failure recovery at the database level, not just in application code.
 
-Failure Recovery Mechanisms Tested:
+**Failure Recovery Mechanisms Tested:**
+1. **Worker Crash Simulation**: I stopped the worker process while votes were being processed. The `claim_expires_at` timestamp meant that votes would automatically become 'pending' again after 5 minutes, allowing another worker to claim them. This was elegantly simple compared to complex retry queues.
 
-Worker Crash Simulation: I stopped the worker process while votes were being processed. The claim_expires_at timestamp meant that votes would automatically become 'pending' again after 5 minutes, allowing another worker to claim them. This was elegantly simple compared to complex retry queues.
+2. **Network Failures**: Testing with invalid credentials or disconnected state showed how the edge client's retry logic (`max_retries=3` with exponential backoff) handled transient failures. The system automatically recovered when the connection was restored.
 
-Network Failures: Testing with invalid credentials or disconnected state showed how the edge client's retry logic (max_retries=3 with exponential backoff) handled transient failures. The system automatically recovered when the connection was restored.
+3. **Duplicate Handling**: The `process_raw_vote` function explicitly tested for duplicates using `ON CONFLICT (user_id, poll_id) DO NOTHING`. I verified this by:
+   - Sending the same vote twice from `edge_client.py` with `--duplicate-chance 1.0`
+   - Checking `processing_logs` showed the second insertion had `status='duplicate'`
+   - Confirming only one record appeared in `processed_votes` for that user-poll pair
 
-Duplicate Handling: The process_raw_vote function explicitly tested for duplicates using ON CONFLICT (user_id, poll_id) DO NOTHING. I verified this by:
+**Insights on Eventual Consistency:**
+The system demonstrated eventual consistency principles beautifully:
+- Votes appeared immediately in `raw_votes` (acknowledged to client)
+- Processing happened asynchronously (no client waiting)
+- Duplicates were silently absorbed
+- Final results in `processed_votes` were guaranteed deduplicated and consistent
 
-Sending the same vote twice from edge_client.py with --duplicate-chance 1.0
-Checking processing_logs showed the second insertion had status='duplicate'
-Confirming only one record appeared in processed_votes for that user-poll pair
-Insights on Eventual Consistency: The system demonstrated eventual consistency principles beautifully:
-
-Votes appeared immediately in raw_votes (acknowledged to client)
-Processing happened asynchronously (no client waiting)
-Duplicates were silently absorbed
-Final results in processed_votes were guaranteed deduplicated and consistent
 This meant the client didn't need to wait for full processing confirmation—a key advantage of async architectures.
 
-Challenges Encountered: The primary challenge was observability. When something went wrong, I had to:
+**Challenges Encountered:**
+The primary challenge was **observability**. When something went wrong, I had to:
+1. Check application logs (edge client output)
+2. Query `raw_votes` for vote state
+3. Check `processing_logs` for worker events
+4. Verify `processed_votes` for final state
 
-Check application logs (edge client output)
-Query raw_votes for vote state
-Check processing_logs for worker events
-Verify processed_votes for final state
 Unlike centralized systems with stack traces, distributed debugging required piecing together multiple data sources. I learned to set up comprehensive logging from the start rather than adding it later.
 
 ---
